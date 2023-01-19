@@ -23,3 +23,21 @@ INSERT INTO messages VALUES (
     'How are you?',
     'Jane'
 );
+
+
+
+CREATE TABLE example(
+    x int,
+    y int,
+    PRIMARY KEY (x, y)
+);
+
+insert INTO example VALUES
+(1, 1),
+(1, 3),
+(1, 2),
+(2, 2),
+(2, 4);
+
+insert INTO example VALUES
+(1, 1);
