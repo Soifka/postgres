@@ -1,40 +1,57 @@
-DROP TABLE orders;
+DROP TABLE chats;
 
-CREATE TABLE users(
+
+CREATE TABLE messages(
     id serial PRIMARY KEY,
-    first_name varchar(64) NOT NULL CHECK(first_name != ''),
-    last_name varchar(64) NOT NULL CONSTRAINT last_name_not_empty CHECK(last_name != ''),
-    email text NOT NULL CHECK(email != '') UNIQUE,
-    gender varchar(30),
-    is_subscribe boolean NOT NULL,
-    birthday date CHECK(birthday < current_date),
-    foot_size smallint,
-    height numeric(3, 2) CONSTRAINT too_high_user CHECK(height < 3.0)
+    author_id int REFERENCES members(id),
+    chat_id int REFERENCES chats(id),
+    text text NOT NULL,
+    send_at timestamp NOT NULL DEFAULT current_timestamp,
+    is_read boolean DEFAULT false,
+    FOREIGN KEY(chat_id, member_id)
 );
 
-INSERT INTO users (first_name, last_name, email, gender,is_subscribe, birthday, foot_size, height) VALUES
-('Ivanna', 'Petrova', 'i.petrova@gmail.com', 'female', true, '1970-09-15', 38, 1.68),
-('Petr', 'Sodorov', 'p.sidorov@gmail.com', 'male', false, '1970-09-15', 43, 1.88);
 
-
-CREATE TABLE orders(
+CREATE TABLE members(
     id serial PRIMARY KEY,
-    created_at timestamp NOT NULL DEFAULT current_timestamp,
-    customer_id int REFERENCES users(id)
+    nickname varchar(50) NOT NULL CONSTRAINT "nickname_must_be_specified" CHECK(nickname != '')
 );
 
-CREATE TABLE orders_to_products(
-    order_id int REFERENCES orders(id),
-    product_id int REFERENCES products(id),
-    quantity int,
-    PRIMARY KEY(order_id, product_id)
+
+CREATE TABLE chats(
+    id serial PRIMARY KEY,
+    chat_name varchar(100) NOT NULL CONSTRAINT "chat_name_must_be_specified" CHECK(chat_name != ''),
+    owner_id int REFERENCES members(id),
+    started_at timestamp NOT NULL DEFAULT current_timestamp,
+    is_private boolean DEFAULT false
 );
 
-INSERT INTO orders VALUES(1);
 
-INSERT INTO orders (customer_id) VALUES(2);
+CREATE TABLE chats_to_members(
+    chat_id int REFERENCES chats(id),
+    member_id int REFERENCES members(id),
+    PRIMARY KEY(chat_id, member_id)
+);
 
-INSERT INTO orders_to_products (order_id, product_id, quantity) VALUES
-    (2, 4, 1),
-    (2, 5, 1)
+
+INSERT INTO members (nickname) VALUES
+('John'),
+('Jane'),
+('Anna'),
+('Mike'),
+('Alex')
 ;
+
+
+INSERT INTO chats (chat_name, owner_id) VALUES
+('Party on Friday', 3),
+('School chat', 2);
+
+
+INSERT INTO messages (author_id, chat_id, text) VALUES
+(3, 1, 'Hi, everybody! My party will be on Friday'),
+(2, 2, 'Hello');
+
+
+INSERT INTO messages (author_id, chat_id, text) VALUES
+(5, 1, 'Great! I will come');
