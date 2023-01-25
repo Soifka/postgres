@@ -4,7 +4,7 @@ class Phone {
 
     static async bulkCreate(phones) {
         const valueString = phones.map(
-            ({ brand, model, price, quantity, category }) =>
+            ({ brand, model, price, quantity = 1, category }) =>
             `('${brand}', '${model}', ${price}, ${quantity}, '${category}')`
         ).join(',');
 
@@ -12,7 +12,7 @@ class Phone {
             `INSERT INTO ${this._tableName}
             (brand, model, price, quantity, category) VALUES
             ${valueString} RETURNING *;`
-        )
+        );
 
         return rows;
     }

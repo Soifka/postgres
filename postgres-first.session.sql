@@ -32,3 +32,17 @@ DELETE FROM contents WHERE id = 1;
 DROP TABLE reactions;
 
 DELETE FROM users WHERE id > 8;
+
+DROP TABLE orders_to_products;
+
+DELETE FROM orders WHERE id >= 1;
+
+CREATE TABLE orders_to_products(
+    order_id int REFERENCES orders(id),
+    product_id int REFERENCES products(id),
+    quantity int NOT NULL CHECK(quantity > 0),
+    PRIMARY KEY(order_id, product_id)
+)
+
+DELETE FROM products;
+DELETE FROM orders;
