@@ -30,3 +30,5 @@ INSERT INTO reactions VALUES(
 DELETE FROM contents WHERE id = 1;
 
 DROP TABLE reactions;
+
+DELETE FROM users WHERE id > 8;
