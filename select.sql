@@ -1,84 +1,54 @@
-SELECT * FROM users;
+SELECT id, first_name, last_name, birthday, age(birthday) FROM users;
 
-SELECT id, first_name FROM users;
+SELECT id, first_name, last_name, birthday, EXTRACT("years" FROM AGE(birthday)) FROM users;
 
-SELECT id, last_name FROM users WHERE id >= 15 AND id <= 26;
-
-/* другой способ ---> (id 15 и 26 будут включены в ответ на SELECT) */
-SELECT * FROM users WHERE id BETWEEN 15 AND 26;
-
-SELECT id, first_name, is_subscribe FROM users WHERE is_subscribe = true;
-
-/*
-Это отработает точно так же, как предыдущая строка
-
-SELECT id, first_name, is_subscribe FROM users WHERE is_subscribe
-*/
-
-SELECT * FROM users WHERE height IS NOT NULL;
-
-SELECT * FROM users WHERE id % 2 = 0;
-
-SELECT * FROM users WHERE height > 1.5;
-
-SELECT * FROM users WHERE gender = 'male' AND is_subscribe;
-
-SELECT * FROM users WHERE first_name = 'Laura';
-
-
-SELECT * FROM users WHERE first_name IN ('Anton', 'Laura', 'Mali', 'Eino');
-
-SELECT * FROM users WHERE id BETWEEN 170 AND 200;
-
------------------
+SELECT id, first_name, last_name, birthday, make_interval(19, 8) FROM users WHERE id = 270;
 
 /*
 
-для шаблонов поиска:
-% --> заменяет любое количество любых символов
-_ --> заменяет один любой символ
+1. Отримати всіх повнолітніх користувачів чоловічої статі.
+
+2. Отримати всіх користувачів-жінок, ім'я яких починається на "А".
+
+3. Отримати всіх користувачів, вік яких від 20 до 40 років.
+
+4. Отримати всіх користувачів, які народились у вересні.
+
+5. Всім користувачам, які народились 6 листопада, змінити підписку на true.
+
+6. Отримати всіх користувачів, які старші за 65 років.
+
+7. Всім користувачам чоловічого роду віком 40 до 50 років встановити вагу = 95.
 
 */
 
-SELECT * FROM users WHERE first_name LIKE 'A%';
-SELECT * FROM users WHERE first_name LIKE '____';
-SELECT * FROM users WHERE first_name LIKE 'M___';
-SELECT * FROM users WHERE first_name LIKE '%a';
 
------------------
+--1 
 
-ALTER TABLE users ADD COLUMN weight int CHECK (weight > 0);
+SELECT *, EXTRACT(years FROM AGE(birthday)) as age FROM users WHERE gender = 'male' AND EXTRACT(years FROM AGE(birthday)) >= 70;
 
-UPDATE users SET weight = 60;
+--2
 
-UPDATE users SET weight = 90 WHERE gender = 'male';
+SELECT * FROM users WHERE gender = 'female' AND first_name LIKE 'A%';
 
-UPDATE employees SET salary = salary * 1.2 WHERE work_hours > 150;
+--3
 
-INSERT INTO users (
-    first_name,
-    last_name,
-    email,
-    gender,
-    is_subscribe,
-    birthday,
-    foot_size,
-    height,
-    weight
-  )
-VALUES (
-    'Bill',
-    'Zubik',
-    'mail@mail',
-    'male',
-    true,
-    '1988-01-25',
-    43,
-    1.85,
-    88
-  ) RETURNING id;
+SELECT *, EXTRACT(years FROM AGE(birthday)) as age FROM users WHERE EXTRACT(years FROM AGE(birthday)) BETWEEN 20 AND 40;
 
-  UPDATE users SET weight = 90 WHERE id = 270 RETURNING *;
+--4
 
-  DELETE FROM users WHERE id = 270 RETURNING first_name;
+SELECT * FROM users WHERE EXTRACT(month from birthday) = 9;
 
+--5
+
+UPDATE users SET is_subscribe = true WHERE EXTRACT(month from birthday) = 11 AND EXTRACT(day from birthday) = 6;
+SELECT * FROM users WHERE EXTRACT(month from birthday) = 11 AND EXTRACT(day from birthday) = 6;
+
+--6
+
+SELECT *, EXTRACT(years FROM AGE(birthday)) as age FROM users WHERE EXTRACT(years FROM AGE(birthday)) > 65;
+
+--7
+
+UPDATE users SET weight = 95 WHERE gender = 'male' AND EXTRACT(years from age(birthday)) BETWEEN 40 AND 50;
+SELECT * FROM users WHERE gender = 'male' AND EXTRACT(years from age(birthday)) BETWEEN 40 AND 50;
