@@ -1,54 +1,51 @@
-SELECT id, first_name, last_name, birthday, age(birthday) FROM users;
+-- найти максимальный вес
+SELECT max(weight) FROM users;
 
-SELECT id, first_name, last_name, birthday, EXTRACT("years" FROM AGE(birthday)) FROM users;
+-- найти минимальный вес
+SELECT min(weight) FROM users;
 
-SELECT id, first_name, last_name, birthday, make_interval(19, 8) FROM users WHERE id = 270;
+-- найти сумму веса всех юзеров
+SELECT sum(weight) FROM users;
 
-/*
+-- найти средний вес
+SELECT avg(weight) FROM users;
 
-1. Отримати всіх повнолітніх користувачів чоловічої статі.
+-- найти количество записей в таблице
+SELECT count(id) FROM users;
 
-2. Отримати всіх користувачів-жінок, ім'я яких починається на "А".
+-- найти средний вес по группам пользователей
+SELECT gender, avg(weight) FROM users
+GROUP BY gender;
 
-3. Отримати всіх користувачів, вік яких від 20 до 40 років.
+-- средний вес юзеров, которые родились после 1970 года
+SELECT avg(weight) 
+FROM users
+WHERE extract(years from birthday) > 1970;
 
-4. Отримати всіх користувачів, які народились у вересні.
+-- средний вес мужчин, которым 27 лет
+SELECT avg(weight) 
+FROM users
+WHERE extract(years from age(birthday)) = 27 AND gender = 'male';
 
-5. Всім користувачам, які народились 6 листопада, змінити підписку на true.
+-- средний возраст всех пользователей
+SELECT avg(extract(years from age(birthday))) 
+FROM users;
 
-6. Отримати всіх користувачів, які старші за 65 років.
+-- минимальный и максимальный возраст пользователей
+SELECT min(extract(years from age(birthday))), max(extract(years from age(birthday))) 
+FROM users;
 
-7. Всім користувачам чоловічого роду віком 40 до 50 років встановити вагу = 95.
+-- минимальный и максимальный возраст пользователей (отдельно мужчин и женщин)
+SELECT gender, min(extract(years from age(birthday))), max(extract(years from age(birthday))) 
+FROM users
+GROUP BY gender;
 
-*/
+-- кол-во пользователей-мужчин
+SELECT count(id)
+FROM users
+WHERE gender = 'male';
 
-
---1 
-
-SELECT *, EXTRACT(years FROM AGE(birthday)) as age FROM users WHERE gender = 'male' AND EXTRACT(years FROM AGE(birthday)) >= 70;
-
---2
-
-SELECT * FROM users WHERE gender = 'female' AND first_name LIKE 'A%';
-
---3
-
-SELECT *, EXTRACT(years FROM AGE(birthday)) as age FROM users WHERE EXTRACT(years FROM AGE(birthday)) BETWEEN 20 AND 40;
-
---4
-
-SELECT * FROM users WHERE EXTRACT(month from birthday) = 9;
-
---5
-
-UPDATE users SET is_subscribe = true WHERE EXTRACT(month from birthday) = 11 AND EXTRACT(day from birthday) = 6;
-SELECT * FROM users WHERE EXTRACT(month from birthday) = 11 AND EXTRACT(day from birthday) = 6;
-
---6
-
-SELECT *, EXTRACT(years FROM AGE(birthday)) as age FROM users WHERE EXTRACT(years FROM AGE(birthday)) > 65;
-
---7
-
-UPDATE users SET weight = 95 WHERE gender = 'male' AND EXTRACT(years from age(birthday)) BETWEEN 40 AND 50;
-SELECT * FROM users WHERE gender = 'male' AND EXTRACT(years from age(birthday)) BETWEEN 40 AND 50;
+-- кол-во пользователей (отдельно мужчин и женщин)
+SELECT gender, count(id)
+FROM users
+GROUP BY gender;
