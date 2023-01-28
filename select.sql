@@ -1,21 +1,29 @@
--- значение LIMIT устанавливает, сколько результатов выводится на одной станице
--- значение OFFSET устанавливает, сколько запросов "отступить" от первой страницы, чтобы вывести определенную страницу с результатами
--- формула для значения OFFSET: LIMIT * (номер страницы - 1)
+-- "склеивание" столбцов
+SELECT id, first_name || ' ' || last_name AS "full name" FROM users;
 
--- получаем первую страницу с 10-ю результатами
-SELECT * FROM users
-LIMIT 10; 
+-- "склеивание" столбцов с помощью функции concat
+SELECT id, concat(first_name, ' ', last_name) AS "full name" FROM users;
 
--- первая страница на самом деле НУЛЕВАЯ!!! это важно для рассчета значения OFFSET
 
--- получаем вторую страницу с 10-ю результатами
-SELECT * FROM users
-LIMIT 10 
-OFFSET 10; --> 10 * (2 - 1)
+-- функция char_length возвращает количество символов в строке
 
--- получаем третью страницу с 10-ю результатами
-SELECT * FROM users
-LIMIT 10 
-OFFSET 20; --> 10 * (3 - 1)
+/*
+Task
+Найти всех юзеров, полное имя (имя + фамилия) которых больше 10 символов
+*/
 
--- получить 9-ю страницу при LIMIT 10 --> 10 * (9 - 1) --> OFFSET будет 80 и т.д.
+--> решение (вариант 1)
+SELECT * FROM users WHERE char_length(concat(first_name, ' ', last_name)) > 10;
+
+-- или
+SELECT id, concat(first_name, ' ', last_name) AS "full name" 
+FROM users
+WHERE char_length(concat(first_name, ' ', last_name)) > 10;
+
+--> решение (вариант 2) с использованием подзапроса
+SELECT * 
+FROM (
+    SELECT id, concat(first_name, ' ', last_name) AS "full name"
+    FROM users   --> получаем табличное выражение
+) AS "FN"   --> табличному выражению нужно обязательно присвоить alias
+WHERE char_length("FN"."full name") > 10;
