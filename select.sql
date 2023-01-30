@@ -106,6 +106,11 @@ SELECT *, extract(years from age(date_of_birth)) AS age FROM workers WHERE extra
 --12 Вибрати всіх співробітників, що народились у вересні
 SELECT * FROM workers WHERE extract(month from date_of_birth) = 9;
 
+--- решение №12 с поздапросом ---
+SELECT * FROM (
+  SELECT *, extract(month from date_of_birth) AS "month_of_birth" FROM workers
+) AS "subquery" WHERE month_of_birth = 9;
+
 --13 Видалити робітника з id = 4
 DELETE FROM workers WHERE id = 4;
 
