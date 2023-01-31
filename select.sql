@@ -1,117 +1,103 @@
+-- Сортировка --
+
+-- ASC - сортировка по возрастанию (работает с ORDER BY по умолчанию)
+-- DESC - сортировка по убыванию
+
+SELECT * FROM users
+ORDER BY birthday DESC;
+
+SELECT * FROM (
+  SELECT *, extract(years from age(birthday)) AS age FROM users 
+  ) AS "test"
+  ORDER BY age;
+
+
+-- пользователи с одинаковой датой рождения группируются и внутри своей группы не сортируются
+UPDATE users
+SET birthday = '1988-07-27'
+WHERE id BETWEEN 250 AND 260;  
+
+SELECT * FROM users
+WHERE id BETWEEN 250 AND 260
+ORDER BY birthday DESC;
+
+-- дополнительная сортировка внутри такой группы --->
+SELECT * FROM users
+ORDER BY birthday,
+         first_name ASC;
+
+-- можно указать и более 2 принципов сортировки         
+--------------------------------------------------------
+
+
+-- отбираем 3 позиции с наименьшим количеством
+SELECT * FROM products
+ORDER BY quantity ASC
+LIMIT 3;
+
+
 /*
-Task
-Створити таблицю workers:
-- id
-- name
-- salary,
-- birthday
-1. Додайте робітника з ім'ям Олег, з/п 300
-2. Додайте робітницю Ярославу, з/п 350
-3. Додайте двох нових працівників одним запитом - 
-    Сашу, з/п 1000
-    Машу, з/п 200
-4. Встановити Олегу з/п 500
-5. Всім, у кого з/п більше 500, врізати з/п до 400
-6. Вибрати всіх робітників, чия з/п більше 400
-7. Вибрати робітника з id = 4
-8. Дізнатися з/п та вік Жені
-9. Знайти робітника з ім'ям "Petya"
-10. Вибрати робітників у віці 27 років або з з/п > 800
-11. Вибрати всіх робітників у віці від 25 до 28 років
-12. Вибрати всіх співробітників, що народились у вересні
-13. Видалити робітника з id = 4
-14. Видалити Олега
-15. Видалити всіх робітників старших за 30 років
+1. Відсортувати юзерів за віком (кількістю повних років)
+2. Відсортуйте телефони за ціною, від найдорожчого до найдешевшого
+3. Виведіть топ-5 телефонів, які частіше за все купують (більше за все продано)
+4*. Знайти кількість однорічок (кількість юзерів з однаковою кількістю повних років)
 */
 
-CREATE TABLE workers(
-    id serial PRIMARY KEY,
-    name varchar(100) NOT NULL CHECK(name != ''),
-    salary int NOT NULL CHECK(salary > 0),
-    date_of_birth date NOT NULL
-);
-
-INSERT INTO workers (name, salary, date_of_birth)
-VALUES (
-    'Evgenii',
-    600,
-    '1990-09-11'
-  );
-
-INSERT INTO workers (name, salary, date_of_birth)
-VALUES(
-    'Petya',
-    850,
-    '1984-12-07'
-  );
-
---1 Додайте робітника з ім'ям Олег, з/п 300
-INSERT INTO workers (name, salary, date_of_birth)
-VALUES (
-    'Oleg',
-    300,
-    '1979-05-13'
-  );
-
---2 Додайте робітницю Ярославу, з/п 350
-INSERT INTO workers (name, salary, date_of_birth)
-VALUES (
-    'Yaroslava',
-    350,
-    '1996-01-20'
-  );  
-
---3 Додайте двох нових працівників одним запитом - Сашу, з/п 1000; Машу, з/п 200
-INSERT INTO workers (name, salary, date_of_birth)
-VALUES (
-    'Sasha',
-    1000,
-    '1996-04-23'
-  ),
-  (
-    'Masha',
-    200,
-    '1998-08-01'
-  );
-
---4 Встановити Олегу з/п 500
-UPDATE workers SET salary = 500 WHERE name = 'Oleg';
-
---5 Всім, у кого з/п більше 500, врізати з/п до 400
-UPDATE workers SET salary = 400 WHERE salary > 500;
-
---6 Вибрати всіх робітників, чия з/п більше 400
-SELECT * FROM workers WHERE salary > 400;
-
---7 Вибрати робітника з id = 4
-SELECT * FROM workers WHERE id = 4;
-
---8 Дізнатися з/п та вік Жені
-SELECT name, salary, extract(years from age(date_of_birth)) AS age FROM workers WHERE name = 'Evgenii';
-
---9 Знайти робітника з ім'ям "Petya"
-SELECT * FROM workers WHERE name = 'Petya';
-
---10 Вибрати робітників у віці 27 років або з з/п > 800
-SELECT * FROM workers WHERE extract(years from age(date_of_birth)) = 27 OR salary > 800;
-
---11 Вибрати всіх робітників у віці від 25 до 28 років
-SELECT *, extract(years from age(date_of_birth)) AS age FROM workers WHERE extract(years from age(date_of_birth)) BETWEEN 25 AND 28;
-
---12 Вибрати всіх співробітників, що народились у вересні
-SELECT * FROM workers WHERE extract(month from date_of_birth) = 9;
-
---- решение №12 с поздапросом ---
+--1 
 SELECT * FROM (
-  SELECT *, extract(month from date_of_birth) AS "month_of_birth" FROM workers
-) AS "subquery" WHERE "subquery"."month_of_birth" = 9;
+  SELECT *, extract(years from age(birthday)) AS age 
+  FROM users 
+) AS "table_with_age"
+ORDER BY "table_with_age".age;
 
---13 Видалити робітника з id = 4
-DELETE FROM workers WHERE id = 4;
+--2
+SELECT * FROM products
+ORDER BY price DESC;
 
---14 Видалити Олега
-DELETE FROM workers WHERE name = 'Oleg';
+--3
+SELECT product_id, sum(quantity) 
+FROM orders_to_products
+GROUP BY product_id
+ORDER BY sum(quantity) DESC
+LIMIT 5;
 
---15 Видалити всіх робітників старших за 30 років
-DELETE FROM workers WHERE extract(years from age(date_of_birth)) > 30
-RETURNING *;
+--4
+/* нужно переделать
+SELECT * FROM (
+  SELECT *, extract(years from age(birthday)) AS age FROM users 
+) AS "table_with_age"
+count(*) GROUP BY "table_with_age".age;
+*/
+
+-- вариант без подзапроса
+SELECT count(*), extract(years from age(birthday)) AS age
+FROM users
+GROUP BY age
+ORDER BY age;
+
+SELECT count(*) AS count, extract(years from age(birthday)) AS age
+FROM users
+GROUP BY age
+ORDER BY count DESC;
+
+
+--- HAVING ---
+
+-- получить всех юзеров, 
+SELECT count(*), extract(years from age(birthday)) AS age
+FROM users
+GROUP BY age
+HAVING count(*) >= 6
+ORDER BY age;
+
+
+SELECT sum(quantity), brand
+FROM products
+GROUP BY brand
+HAVING sum(quantity) > 5000;
+
+
+SELECT product_id, sum(quantity)
+FROM orders_to_products
+GROUP BY product_id
+HAVING sum(quantity) > 50;
