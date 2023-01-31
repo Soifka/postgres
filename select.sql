@@ -194,4 +194,29 @@ WHERE id IN (
 
 -------------------------------------------
 
+--- Task 31.01.2023 ---
+
+INSERT INTO products (
+    brand,
+    model,
+    category,
+    price,
+    quantity
+  )
+VALUES (
+    'LG',
+    'model 1',
+    'phones',
+    1500,
+    5
+  );
+
+
+--- Знайдіть всі телефони, які ніхто ніколи не купував --->
+SELECT * FROM products AS p
+LEFT JOIN orders_to_products AS otp
+ON p.id = otp.product_id
+WHERE otp.order_id IS NULL;
+
+
 
