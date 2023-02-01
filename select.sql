@@ -219,4 +219,167 @@ ON p.id = otp.product_id
 WHERE otp.order_id IS NULL;
 
 
+/*
+1. Знайти повну вартість кожного замовлення.
+2. Знайти кількість позицій в кожному замовленні.
+3. Знайти найпопулярніший товар.
+4. Прорахувати середній чек по всьому магазину.
+5. Витягти всі замовлення вище середнього чека.
+6. Витягти всіх користувачів, в яких кількість замовлень вище середньої.
+7. Витягти користуачів та кількість телефонів, які вони замовляли (кількість замовлень * quantity)
+*/
 
+
+--1  Знайти повну вартість кожного замовлення.
+SELECT otp.order_id, sum(p.price * otp.quantity) AS order_price
+FROM products AS p
+JOIN orders_to_products AS otp
+ON p.id = otp.product_id
+GROUP BY otp.order_id
+ORDER BY otp.order_id;
+
+
+--2  Знайти кількість позицій в кожному замовленні.
+SELECT order_id, sum(quantity) AS products_in_order
+FROM orders_to_products
+GROUP BY order_id
+ORDER BY order_id;
+
+
+--3  Знайти найпопулярніший товар.
+SELECT otp.product_id, concat(p.brand, ', ', p.model) AS product_name, sum(otp.quantity) AS total_sold
+FROM products AS p
+JOIN orders_to_products AS otp
+ON p.id = otp.product_id
+GROUP BY otp.product_id, product_name
+ORDER BY total_sold DESC
+LIMIT 3;
+
+--- решение с подзапросом ---
+SELECT bestsellers.product_id, products.brand, products.model, bestsellers.total_sold 
+FROM (
+  SELECT product_id, sum(quantity) AS total_sold
+  FROM orders_to_products
+  GROUP BY product_id
+  ORDER BY total_sold DESC
+  LIMIT 3
+) AS bestsellers
+LEFT JOIN products
+ON bestsellers.product_id = products.id
+ORDER BY total_sold DESC;
+
+--- mentor's resolve ---
+SELECT p.id, p.brand, p.model, sum(otp.quantity) AS total_sold
+FROM products AS p
+JOIN orders_to_products AS otp
+ON p.id = otp.product_id
+GROUP BY p.id
+ORDER BY total_sold DESC
+LIMIT 1;
+-----------------------
+
+
+--4  Прорахувати середній чек по всьому магазину.
+SELECT avg(subquery.order_price) AS average_order_price 
+FROM (
+  SELECT otp.order_id, sum(p.price * otp.quantity) AS order_price
+  FROM products AS p
+  JOIN orders_to_products AS otp
+  ON p.id = otp.product_id
+  GROUP BY otp.order_id
+) AS subquery;
+
+
+--5  Витягти всі замовлення вище середнього чека.  !!!!!!!!!!!!
+SELECT subquery.* FROM (
+  SELECT otp.order_id, sum(p.price * otp.quantity) AS order_price
+  FROM products AS p
+  JOIN orders_to_products AS otp
+  ON p.id = otp.product_id
+  GROUP BY otp.order_id
+) AS subquery
+WHERE subquery.order_price > avg(subquery.order_price);
+
+--- mentor's resolve ---
+SELECT subquery.*
+FROM (
+  SELECT otp.order_id, sum(p.price * otp.quantity) AS order_price
+  FROM products AS p
+  JOIN orders_to_products AS otp
+  ON p.id = otp.product_id
+  GROUP BY otp.order_id
+) AS subquery
+WHERE subquery.order_price > (
+  SELECT avg(subquery.order_price) 
+  FROM (
+    SELECT otp.order_id, sum(p.price * otp.quantity) AS order_price
+    FROM products AS p
+    JOIN orders_to_products AS otp
+    ON p.id = otp.product_id
+    GROUP BY otp.order_id
+  ) AS subquery
+);
+
+/*
+
+WITH ...alias... AS table
+SELECT.......
+
+*/
+
+WITH owc AS (
+  SELECT otp.order_id, sum(p.price * otp.quantity) AS order_price
+  FROM products AS p
+  JOIN orders_to_products AS otp
+  ON p.id = otp.product_id
+  GROUP BY otp.order_id
+)
+SELECT owc.*
+FROM owc
+WHERE owc.order_price > (
+  SELECT avg(owc.order_price) 
+  FROM owc
+);
+-------------------------------
+
+
+--6  Витягти всіх користувачів, в яких кількість замовлень вище середньої.
+--- mentor's resolve ---
+WITH orders_with_counts AS (
+  SELECT customer_id, count(*) AS orders_count
+  FROM orders
+  GROUP BY customer_id
+)
+SELECT users.id, users.first_name, users.last_name, orders_with_counts.orders_count
+FROM orders_with_counts
+JOIN users
+ON users.id = orders_with_counts.customer_id
+WHERE orders_with_counts.orders_count > (
+  SELECT avg(orders_with_counts.orders_count)
+  FROM orders_with_counts
+);
+
+
+--7  Витягти користуачів та кількість телефонів, які вони замовляли (кількість замовлень * quantity)
+SELECT u.id, concat(u.first_name, ' ', u.last_name) AS customer_name, sum(subquery.products_in_order) AS total_products_bought
+FROM (
+  SELECT o.id AS order_id, o.customer_id, sum(otp.quantity) AS products_in_order
+  FROM orders AS o
+  JOIN orders_to_products AS otp
+  ON o.id = otp.order_id
+  GROUP BY o.id, o.customer_id
+  ORDER BY o.customer_id
+) AS subquery
+JOIN users AS u
+ON u.id = subquery.customer_id
+GROUP BY u.id, customer_name;
+
+
+--- mentor's resolve ---
+SELECT u.id, u.first_name, u.last_name, sum(otp.quantity)
+FROM users AS u
+JOIN orders AS o
+ON u.id = o.customer_id
+JOIN orders_to_products AS otp
+ON o.id = otp.order_id
+GROUP BY u.id;
