@@ -128,3 +128,35 @@ CREATE TABLE subjects(
 INSERT INTO students_to_teachers VALUES
 (1, 1),
 (1, 2);
+
+
+--- 4NF
+
+CREATE TABLE restaurants(
+    id serial PRIMARY KEY
+);
+
+CREATE TABLE delivery_services(
+    id serial PRIMARY KEY
+);
+
+CREATE TABLE restaurants_to_deliveries(
+    restaurant_id int REFERENCES restaurants(id),
+    delivery_id int REFERENCES delivery_services(id),
+    PRIMARY KEY (restaurant_id, delivery_id)
+);
+
+INSERT INTO restaurants_to_deliveries VALUES
+(1, 1, 'margarita'),
+(1, 2, '4cheese'),
+(1, 3, 'carbonara');
+
+CREATE TABLE pizzas(
+    name varchar(200) PRIMARY KEY
+);
+
+CREATE TABLE pizzas_to_restaurants(
+    pizza_type varchar(200) REFERENCES pizzas(name),
+    restaurant_id int REFERENCES restaurants(id),
+    PRIMARY KEY (pizza_type, restaurant_id)
+);
