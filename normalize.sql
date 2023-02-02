@@ -57,3 +57,74 @@ SELECT e.id, e.name, e.position, p.car_avaliability
 FROM employees AS e
 JOIN positions AS p
 ON e.position = p.name;
+
+
+--- 3NF
+
+DROP TABLE employees;
+DROP TABLE positions;
+
+CREATE TABLE employees(
+    id serial PRIMARY KEY,
+    name varchar(200),
+    department varchar(300),
+    department_phone varchar(20)
+);
+
+INSERT INTO employees (name, department, department_phone)
+VALUES 
+('John Doe', 'HR-dep', '25-17-85'),
+('Jane Doe', 'Sales-dep', '56-58-12'),
+('Carl Mot', 'Dev-dep', '36-87-96');
+
+
+CREATE TABLE departments (
+    name varchar(200) PRIMARY KEY,
+    phone_number varchar(20)
+);
+
+INSERT INTO departments VALUES 
+('HR-dep', '25-17-85'),
+('Sales-dep', '56-58-12'),
+('Dev-dep', '36-87-96');
+
+ALTER TABLE employees
+DROP COLUMN department_phone;
+
+ALTER TABLE employees
+ADD FOREIGN KEY (department) REFERENCES departments(name);
+
+
+--- BCNF
+
+CREATE TABLE students(
+    id serial PRIMARY KEY,
+    name varchar(200)
+);
+
+CREATE TABLE teachers(
+    id serial PRIMARY KEY,
+    name varchar(200),
+    subject varchar(200) REFERENCES subjects(name)
+);
+
+CREATE TABLE students_to_teachers(
+    teacher_id int REFERENCES teachers(id),
+    student_id int REFERENCES students(id),
+    PRIMARY KEY (teacher_id, student_id)
+);
+
+INSERT INTO students_to_teachers VALUES
+(1, 1, 'biology'),
+(1, 2, 'biology'),
+(2, 1, 'math'),
+(2, 2, 'physics');  ----> problem! --- resolved by creating TABLE subjects
+
+CREATE TABLE subjects(
+    name varchar(200) PRIMARY KEY
+);
+
+--- after creating TABLE subjects ---->
+INSERT INTO students_to_teachers VALUES
+(1, 1),
+(1, 2);
