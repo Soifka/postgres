@@ -214,3 +214,33 @@ GROUP BY u.id, u.first_name, u.last_name, u.email
 ORDER BY count(o.id);
 
 -------------------------------------------------------------
+
+
+--- Найти все телефоны, цена которых больше 3000 ---
+
+--- v1
+SELECT count(*)
+FROM products
+WHERE price > 3000;
+
+--- v2
+SELECT sum(
+    CASE WHEN price > 3000 THEN 1
+    ELSE 0
+    END
+)
+FROM products;
+
+------------------------------------
+
+---- COALESCE ---- (заменяет NULL указанным значением)
+SELECT COALESCE(NULL, 12, 24) ---> 12
+       COALESCE(NULL, NULL, NULL) --> NULL
+
+
+UPDATE products
+SET description = 'Super smartphone. Real flagman'
+WHERE id % 2 = 0;
+
+SELECT id, brand, model, price, COALESCE(description, 'This model has not description')
+FROM products;
