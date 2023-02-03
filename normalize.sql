@@ -160,3 +160,82 @@ CREATE TABLE pizzas_to_restaurants(
     restaurant_id int REFERENCES restaurants(id),
     PRIMARY KEY (pizza_type, restaurant_id)
 );
+
+
+
+---- Task "База данных поставки товаров" ---
+
+CREATE TABLE prods(
+    id serial PRIMARY KEY,
+    name varchar(200) NOT NULL,
+    price numeric(10, 2)
+);
+
+CREATE TABLE suppliers(
+    supplier_id serial PRIMARY KEY,
+    name varchar(200) NOT NULL,
+    address varchar(300) NOT NULL,
+    phone_number varchar(200)
+);
+
+CREATE TABLE contracts(
+    contract_number int PRIMARY KEY,
+    sign_at date,
+    end_at date,
+    supplier int REFERENCES supplier(supplier_id)
+);
+
+CREATE TABLE supplies(
+    prod_id int REFERENCES prods(id),
+    contract int REFERENCES contracts(contract_number),
+    supply_id int NOT NULL,  --- serial???
+    plan_prods_quantity int NOT NULL,
+    PRIMARY KEY (contract, prod_id)
+);
+
+CREATE TABLE shipments(
+    shipment_id int PRIMARY KEY,
+    supply_id int REFERENCES supplies(supply_id),
+    completed_at date,
+    prods_quantity int NOT NULL
+);
+
+
+-------- mentor's resolve ---------
+
+CREATE TABLE products(
+    id serial PRIMARY KEY,
+    name varchar(300) NOT NULL CHECK (name != '')
+);
+
+CREATE TABLE manufacturers(
+    id serial PRIMARY KEY,
+    name varchar(300) NOT NULL CHECK (name != ''),
+    address text NOT NULL,
+    phone_number varchar(20) NOT NULL
+);
+
+CREATE TABLE orders(
+    id serial PRIMARY KEY,
+    product_id int REFERENCES products(id),
+    quantity_plan int NOT NULL,
+    contract_number int NOT NULL,
+    contract_date date NOT NULL,
+    manufacturer_id int REFERENCES manufacturers(id),
+    order_cost decimal(10, 2) NOT NULL
+);
+
+CREATE TABLE shipments(      ------ здесь нужна цена???
+    id serial PRIMARY KEY,
+    order_id int REFERENCES orders(id),
+    shipment_date date NOT NULL
+);
+
+CREATE TABLE products_to_shipment(
+    product_id int REFERENCES products(id),
+    shipment_id int REFERENCES shipments(id),
+    product_quantity int NOT NULL,
+    PRIMARY KEY(product_id, shipment_id)
+);
+
+------------------------------------------
