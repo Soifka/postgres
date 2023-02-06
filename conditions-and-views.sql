@@ -82,3 +82,41 @@ SELECT * FROM products AS p
 WHERE p.id != ALL (
     SELECT product_id FROM orders_to_products
 );
+
+
+---- TASK ----
+/*
+Найти все телефоны, которые покупал пользователь с id = 260
+*/
+
+WITH all_orders AS (
+    SELECT * FROM orders
+    WHERE customer_id = 260
+)
+SELECT * FROM products
+WHERE id IN (
+    SELECT otp.product_id FROM orders_to_products AS otp 
+    WHERE otp.order_id IN (
+    SELECT id FROM all_orders
+    )
+);
+
+--- mentor's resolve ---
+SELECT * FROM products AS p
+WHERE p.id = ANY (
+    SELECT product_id FROM orders_to_products AS otp
+    WHERE order_id = SOME (
+        SELECT id FROM orders AS o 
+        WHERE customer_id = 260
+    )
+);
+
+--- решение с JOIN --->
+SELECT * FROM products AS p
+JOIN orders_to_products AS otp
+ON otp.product_id = p.id
+JOIN orders AS o
+ON otp.order_id = o.id
+WHERE o.customer_id = 260;
+
+-------------------------
